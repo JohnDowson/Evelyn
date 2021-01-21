@@ -1,15 +1,20 @@
 use crate::{Message, Subscription};
-use std::sync::mpsc::{SendError, Sender};
+use std::{
+    fmt::Debug,
+    sync::mpsc::{SendError, Sender},
+};
+
+#[derive(Debug)]
 pub struct Subscriber<M>
 where
-    M: Message,
+    M: Message + Debug,
 {
     pub(crate) sender: Sender<<Self as Subscription>::Event>,
     pub(crate) discriminant_set: Vec<<M as Message>::Discriminant>,
 }
 impl<M> PartialEq for Subscriber<M>
 where
-    M: Message,
+    M: Message + Debug,
 {
     fn eq(&self, other: &Self) -> bool {
         self.discriminant_set.eq(&other.discriminant_set)
@@ -17,7 +22,7 @@ where
 }
 impl<M> Subscription for Subscriber<M>
 where
-    M: Message,
+    M: Message + Debug,
 {
     type Event = M;
     fn subscribed_to(&self, message: &Self::Event) -> bool {
@@ -28,7 +33,7 @@ where
         &self.discriminant_set
     }
 
-    fn send_event(&mut self, message: Self::Event) -> Result<(), SendError<Self::Event>> {
+    fn send_event(&self, message: Self::Event) -> Result<(), SendError<Self::Event>> {
         self.sender.send(message)
     }
 }
