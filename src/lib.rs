@@ -48,7 +48,7 @@ impl<M: Message> TerminationCondition<M> for () {
         false
     }
 }
-impl<M: Message + Debug, T: FnMut(&M) -> bool> TerminationCondition<M> for T {
+impl<M: Message, T: FnMut(&M) -> bool> TerminationCondition<M> for T {
     fn terminates(&mut self, message: &M) -> bool {
         self(message)
     }
@@ -115,8 +115,33 @@ mod tests {
         subscribe_sink.send(subscriber).unwrap();
 
         thread::spawn(move || bus.serve_events().unwrap());
-        let tr = rx.recv();
-        assert_eq!(tr, Ok(TestMessage::FooEvent));
+        assert_eq!(rx.recv(), Ok(TestMessage::FooEvent));
+        etx.send(TestMessage::Terminate).unwrap();
+    }
+
+    // This could be blanked impl'd for Message, but alas that would conflict with blanket impl for FnMut(M) -> bool
+    impl TerminationCondition<TestMessage> for TestMessage {
+        fn terminates(&mut self, message: &TestMessage) -> bool {
+            self == message
+        }
+    }
+    #[test]
+    fn bus_terminated_by_message() {
+        let mut bus: Bus<TestMessage, Subscriber<TestMessage>, TestMessage> =
+            Bus::new(TestMessage::Terminate);
+        let subscribe_sink = bus.get_subscrition_sink();
+        let (tx, rx) = mpsc::channel();
+        let subscriber = Subscriber::<TestMessage> {
+            sender: tx,
+            discriminant_set: vec![TestMessage::FooEvent.discriminant()],
+        };
+        let etx = bus.get_event_sink();
+
+        etx.send(TestMessage::FooEvent).unwrap();
+        subscribe_sink.send(subscriber).unwrap();
+
+        thread::spawn(move || bus.serve_events().unwrap());
+        assert_eq!(rx.recv(), Ok(TestMessage::FooEvent));
         etx.send(TestMessage::Terminate).unwrap();
     }
 }
