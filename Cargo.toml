@@ -1,0 +1,9 @@
+[package]
+name = "evelyn"
+version = "0.1.0"
+description = "Simple event distribution library"
+authors = ["John Dowson <dowson.john.pony@gmail.com>"]
+edition = "2018"
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
