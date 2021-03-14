@@ -15,6 +15,7 @@ impl std::fmt::Display for BusError {
 }
 impl Error for BusError {}
 
+/// A generic implementation of an event bus using `std::sync::mpsc`
 pub struct Bus<M, S, C>
 where
     M: Message,

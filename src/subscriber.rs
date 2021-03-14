@@ -5,6 +5,7 @@ use std::{
 };
 
 #[derive(Debug)]
+/// A generic implementation of bus subscription using `std::sync::mpsc`
 pub struct Subscriber<M>
 where
     M: Message + Debug,
