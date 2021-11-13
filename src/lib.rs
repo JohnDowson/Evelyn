@@ -48,7 +48,7 @@ where
 }
 impl<T> Discriminant<T> for mem::Discriminant<T> {}
 
-/// A trait describin a bus subscription
+/// A trait describing a bus subscription
 pub trait Subscription
 where
     Self: PartialEq,
